@@ -69,3 +69,5 @@ def create_bot():
 
         driver.quit()
         authenticity.quit()
+
+
