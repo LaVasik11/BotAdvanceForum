@@ -2,8 +2,9 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import create_bot
-import re
 from config import bot_name, password, quantity_bot
+import tkinter as tk
+from tkinter import ttk
 
 
 
@@ -90,11 +91,63 @@ def main():
                  'Убрать реакции': remove_reactions,
                  'Написать сообщения в теме': write_messages}
 
-    print('Доступные варианты: [Создать ботов | Поставить реакции на пост | Убрать реакции | Написать сообщения в теме]')
-    choice = input('Выберите действие: ')
-    print(f'Вы выбрали: {choice}\n', '-'*(12+len(choice)))
 
-    func_dict[choice]()
+    def finish():
+        root.destroy()
+
+    root = tk.Tk()
+    root.title("Консоль упровления ботами")
+    icon = tk.PhotoImage(file="images/AdvanceLogo.png")
+    root.iconphoto(False, icon)
+    root.geometry("600x250+700+300")
+    root.resizable(False, False)
+    root.protocol("WM_DELETE_WINDOW", finish)
+
+    bot_name_widget = tk.StringVar(value='CoolBot_V1_№')
+    password_widget = tk.StringVar(value='password2098715')
+    nick_in_the_game_widget = tk.StringVar(value='nik_v_igre')
+    quantity_bot_widget = tk.IntVar(value=10)
+
+
+    create_bot_btn = ttk.Button(text="Создать ботов", command=create_bot)
+    put_reaction_btn = ttk.Button(text='Поставить реакции на пост', command=put_reaction)
+    remove_reactions_btn = ttk.Button(text='Убрать реакции', command=remove_reactions)
+    write_messages_btn = ttk.Button(text='Написать сообщения в теме', command=write_messages)
+    label_settings = ttk.Label(text='| НАСТРОЙКИ |')
+    label_action = ttk.Label(text="| ВЫБЕРИТЕ ДЕЙСТВИЕ |")
+    label_bot_name = ttk.Label(text="Имя бота:")
+    lable_password_widget = ttk.Label(text="Пароль:")
+    lable_nick_in_the_game_widget = ttk.Label(text="Ник в игре:")
+    lable_quantity_bot_widget = ttk.Label(text="Количество ботов:")
+    lable_dash = ttk.Label(text="-"*120)
+
+
+
+    label_action.grid(column=0, row=0, padx=5, pady=10, columnspan=4)
+    create_bot_btn.grid(column=0, row=1, padx=5, pady=10)
+    put_reaction_btn.grid(column=1, row=1, padx=5, pady=10)
+    remove_reactions_btn.grid(column=2, row=1, padx=5, pady=10)
+    write_messages_btn.grid(column=3, row=1, padx=5, pady=10)
+    label_settings.grid(column=0, row=2, padx=5, pady=10, columnspan=4)
+    label_bot_name.grid(column=0, row=3, pady=10, sticky=tk.E)
+    ttk.Entry(textvariable=bot_name_widget).grid(column=1, row=3, pady=10, sticky=tk.W)
+    lable_password_widget.grid(column=2, row=3, pady=10, sticky=tk.E)
+    ttk.Entry(textvariable=password_widget).grid(column=3, row=3, pady=10, sticky=tk.W)
+    lable_nick_in_the_game_widget.grid(column=0, row=4, pady=10, sticky=tk.E)
+    ttk.Entry(textvariable=nick_in_the_game_widget).grid(column=1, row=4, pady=10, sticky=tk.W)
+    lable_quantity_bot_widget.grid(column=2, row=4, pady=10, sticky=tk.E)
+    ttk.Entry(textvariable=quantity_bot_widget).grid(column=3, row=4, pady=10, sticky=tk.W)
+    lable_dash.grid(column=0, row=5, columnspan=4, sticky=tk.SW)
+
+    root.mainloop()
+
+
+
+    # print('Доступные варианты: [Создать ботов | Поставить реакции на пост | Убрать реакции | Написать сообщения в теме]')
+    # choice = input('Выберите действие: ')
+    # print(f'Вы выбрали: {choice}\n', '-'*(12+len(choice)))
+
+    # func_dict[choice]()
 
 
 if __name__ == '__main__':
