@@ -1,4 +1,4 @@
-from main import name_bot, password, quantity_bot, nick_in_the_game
+from config import bot_name, password, nick_in_the_game, quantity_bot
 import create_anonim_emai
 import re, os, random, string, time
 from selenium import webdriver
@@ -24,7 +24,7 @@ def create_bot():
 
         for label, input_field in zip(labels, input_fields):
             if label.text == 'Имя пользователя':
-                input_field.send_keys(f'{name_bot}{i}')
+                input_field.send_keys(f'{bot_name}{i}')
             elif label.text == 'Электронная почта':
                 input_field.send_keys(mail)
             elif label.text == 'Пароль':
