@@ -10,11 +10,11 @@ password = 'password2098715'
 nick_in_the_game = 'nik_v_igre'
 quantity_bot = 10
 
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
 
 def put_reaction():
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
     url_to_the_page = input('Введите ссылку на пост: ')
     reaction = input('Выберете реакцию[Клёво/Люблю/Ха-ха/Ничоси/Печалька/Отстой]: ')
 
@@ -45,8 +45,6 @@ def remove_reactions():
     post_number = int(input('Введите номер поста: '))
 
     for i in range(1, quantity_bot + 1):
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
         driver = webdriver.Chrome(options=options)
         driver.get(url_to_the_page)
 
@@ -67,13 +65,36 @@ def remove_reactions():
     print('\n', '-'*16, '\n| Реакции убраны |\n', '-'*16)
 
 
+def write_messages():
+    url_to_the_page = input('Введите ссылку на страницу: ')
+    message = input('Введите текст сообщения: ')
+
+    for i in range(1, quantity_bot+1):
+        driver = webdriver.Chrome(options=options)
+        driver.get(url_to_the_page)
+
+        driver.find_element(By.CLASS_NAME, 'p-navgroup-linkText').click()
+        time.sleep(2)
+        driver.find_elements(By.CLASS_NAME, 'input')[-2].send_keys(f'{name_bot}{i}')
+        driver.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
+        driver.find_elements(By.CLASS_NAME, 'iconic-label')[-1].click()
+        driver.find_elements(By.CLASS_NAME, 'button-text')[-2].click()
+
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        driver.find_element(By.CSS_SELECTOR, '.fr-element.fr-view.fr-element-scroll-visible').send_keys(message)
+        driver.find_elements(By.CLASS_NAME, 'button-text')[-3].click()
+
+        driver.quit()
+
 def main():
     func_dict = {'Создать ботов': create_bot.create_bot,
                  'Поставить реакции на пост': put_reaction,
-                 'Убрать реакции': remove_reactions}
+                 'Убрать реакции': remove_reactions,
+                 'Написать сообщения в теме': write_messages}
 
-    print('Доступные варианты: [Создать ботов | Поставить реакции на пост | Убрать реакции]')
+    print('Доступные варианты: [Создать ботов | Поставить реакции на пост | Убрать реакции | Написать сообщения в теме]')
     choice = input('Выберите действие: ')
+    print(f'Вы выбрали: {choice}\n', '-'*(12+len(choice)))
 
     func_dict[choice]()
 
