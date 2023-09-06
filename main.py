@@ -55,7 +55,7 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
                 pattern = r"https://forum\.advance-rp\.ru/account-confirmation/.+"
                 matches = re.findall(pattern, file_contents)
 
-                print(str(matches)[2:-3])
+                # print(str(matches)[2:-3])
                 authenticity = webdriver.Chrome()
                 authenticity.get(str(matches)[2:-3])
 
@@ -65,8 +65,8 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
             while attempts < max_attempts:
                 try:
                     os.remove(file_path)
-                    print(f"Файл '{file_name}' успешно удален.")
-                    print('\n', '-'*20, '\n')
+                    # print(f"Файл '{file_name}' успешно удален.")
+                    # print('\n', '-'*20, '\n')
                     break
                 except PermissionError:
                     time.sleep(1)

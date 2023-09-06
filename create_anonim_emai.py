@@ -35,7 +35,7 @@ def check_mail(mail=''):
                 if k == 'id':
                     id_list.append(v)
 
-        print(f'[+] У вас {length} входящих! Почта обновляется автоматически каждые 5 секунд!')
+        # print(f'[+] У вас {length} входящих! Почта обновляется автоматически каждые 5 секунд!')
 
 
         current_dir = os.getcwd()
@@ -69,13 +69,13 @@ def delete_mail(mail=''):
     }
 
     r = requests.post(url, data=data)
-    print(f'[X] Почтовый адрес {mail} - удален!\n')
+    # print(f'[X] Почтовый адрес {mail} - удален!\n')
 
 
 def main(mail):
     global check_letters
     try:
-        print(f'[+] Ваш почтовый адрес: {mail}')
+        # print(f'[+] Ваш почтовый адрес: {mail}')
 
         mail_req = requests.get(f'{API}?login={mail.split("@")[0]}&domain={mail.split("@")[1]}')
 
@@ -87,7 +87,7 @@ def main(mail):
         raise ValueError
     except:
         delete_mail(mail=mail)
-        print('Проверка почты завершена.')
+        # print('Проверка почты завершена.')
 
 
 
