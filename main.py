@@ -182,34 +182,55 @@ def remove_reactions(bot_name, password, quantity_bot, root):
     start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2, rowspan=2)
 
 
-def write_messages(bot_name, password, quantity_bot):
-    url_to_the_page = input('Введите ссылку на страницу: ')
-    message = input('Введите текст сообщения: ')
+def write_messages(bot_name, password, quantity_bot, root):
+    def main_ction(url_to_the_page, message):
+        for i in range(1, quantity_bot+1):
+            driver = webdriver.Chrome(options=options)
+            driver.get(url_to_the_page)
 
-    for i in range(1, quantity_bot+1):
-        driver = webdriver.Chrome(options=options)
-        driver.get(url_to_the_page)
+            driver.find_element(By.CLASS_NAME, 'p-navgroup-linkText').click()
+            time.sleep(2)
+            driver.find_elements(By.CLASS_NAME, 'input')[-2].send_keys(f'{bot_name}{i}')
+            driver.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
+            driver.find_elements(By.CLASS_NAME, 'iconic-label')[-1].click()
+            driver.find_elements(By.CLASS_NAME, 'button-text')[-2].click()
 
-        driver.find_element(By.CLASS_NAME, 'p-navgroup-linkText').click()
-        time.sleep(2)
-        driver.find_elements(By.CLASS_NAME, 'input')[-2].send_keys(f'{bot_name}{i}')
-        driver.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
-        driver.find_elements(By.CLASS_NAME, 'iconic-label')[-1].click()
-        driver.find_elements(By.CLASS_NAME, 'button-text')[-2].click()
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            driver.find_element(By.CSS_SELECTOR, '.fr-element.fr-view.fr-element-scroll-visible').send_keys(message)
+            driver.find_elements(By.CLASS_NAME, 'button-text')[-3].click()
 
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        driver.find_element(By.CSS_SELECTOR, '.fr-element.fr-view.fr-element-scroll-visible').send_keys(message)
-        driver.find_elements(By.CLASS_NAME, 'button-text')[-3].click()
+            driver.quit()
+        frame2.destroy()
 
-        driver.quit()
+    frame2 = tk.Toplevel(root)
+    frame2.title("Консоль упровления ботами")
+    frame2.geometry("600x230+700+300")
+    icon = tk.PhotoImage(file="images/AdvanceLogo.png")
+    frame2.iconphoto(False, icon)
+    frame2.resizable(False, False)
+
+    global entry_var_link
+    entry_var_link = tk.StringVar()
+
+    lable_seting = ttk.Label(frame2, text="| НАСТРОЙКИ |")
+    label_link = ttk.Label(frame2, text="Введите ссылку на страницу: ")
+    lable_dash = ttk.Label(frame2, text="-" * 120)
+    lable_number_post = ttk.Label(frame2, text="Введите текст: ")
+    text_widget = tk.Text(frame2, width=40, height=5)
+    start_btn = ttk.Button(frame2, text='Старт',
+                           command=lambda: main_ction(entry_var_link.get(), text_widget.get("1.0", "end-1c")))
+
+    lable_seting.grid(column=0, row=0, columnspan=2)
+    lable_dash.grid(column=0, row=1, columnspan=2)
+    label_link.grid(column=0, row=2, padx=10, pady=10, sticky=tk.E)
+    ttk.Entry(frame2, textvariable=entry_var_link, width=55).grid(column=1, row=2, pady=10, sticky=tk.W)
+    lable_number_post.grid(column=0, row=3, padx=10, pady=10, sticky=tk.E)
+    text_widget.grid(column=1, row=3, padx=10, pady=10, sticky="w")
+    start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2, rowspan=2)
+
 
 def main():
-    func_dict = {'Создать ботов': create_bot,
-                 'Поставить реакции на пост': put_reaction,
-                 'Убрать реакции': remove_reactions,
-                 'Написать сообщения в теме': write_messages}
-
-
+    
     def finish():
         root.destroy()
 
@@ -245,7 +266,8 @@ def main():
     write_messages_btn = ttk.Button(text='Написать сообщения в теме',
                                     command=lambda: write_messages(bot_name_widget.get(),
                                                                    password_widget.get(),
-                                                                   quantity_bot_widget.get()))
+                                                                   quantity_bot_widget.get(),
+                                                                   root))
 
     label_settings = ttk.Label(text='| НАСТРОЙКИ |')
     label_action = ttk.Label(text="| ВЫБЕРИТЕ ДЕЙСТВИЕ |")
@@ -274,14 +296,6 @@ def main():
     lable_dash.grid(column=0, row=5, columnspan=4, sticky=tk.SW)
 
     root.mainloop()
-
-
-
-    # print('Доступные варианты: [Создать ботов | Поставить реакции на пост | Убрать реакции | Написать сообщения в теме]')
-    # choice = input('Выберите действие: ')
-    # print(f'Вы выбрали: {choice}\n', '-'*(12+len(choice)))
-
-    # func_dict[choice]()
 
 
 if __name__ == '__main__':
