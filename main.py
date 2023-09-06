@@ -77,32 +77,64 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
 
 
 
-def put_reaction(bot_name, password, quantity_bot):
-    print(bot_name, password, quantity_bot)
+def put_reaction(bot_name, password, quantity_bot, root):
+    def main_ction(url_to_the_page, reaction):
 
-    url_to_the_page = input('Введите ссылку на пост: ')
-    reaction = input('Выберете реакцию[Клёво/Люблю/Ха-ха/Ничоси/Печалька/Отстой]: ')
+        lable_process = ttk.Label(frame2, text="Идет процесс, ожидайте...")
+        lable_process.grid(column=0, row=5, padx=10, pady=10, sticky=tk.EW, columnspan=2)
 
 
-    for i in range(1, quantity_bot+1):
-        x = url_to_the_page.split('-')[-1]
+        for i in range(1, quantity_bot+1):
+            x = url_to_the_page.split('-')[-1]
 
-        d = {'Клёво': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=1',
-             'Люблю': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=2',
-             'Ха-ха': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=3',
-             'Ничоси': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=4',
-             'Печалька': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=5',
-             'Отстой': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=6'}
+            d = {'Клёво': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=1',
+                 'Люблю': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=2',
+                 'Ха-ха': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=3',
+                 'Ничоси': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=4',
+                 'Печалька': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=5',
+                 'Отстой': f'https://forum.advance-rp.ru/posts/{x}/react?reaction_id=6'}
 
-        confirm_reaction = webdriver.Chrome(options=options)
-        confirm_reaction.get(url=d[reaction])
 
-        confirm_reaction.find_elements(By.CLASS_NAME, 'input')[0].send_keys(f'{bot_name}{i}')
-        confirm_reaction.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
-        confirm_reaction.find_elements(By.CLASS_NAME, 'button-text')[2].click()
-        confirm_reaction.find_element(By.CSS_SELECTOR, '.button--primary.button.button--icon.button--icon--confirm').click()
+            confirm_reaction = webdriver.Chrome(options=options)
+            confirm_reaction.get(url=d[reaction])
 
-        confirm_reaction.quit()
+            confirm_reaction.find_elements(By.CLASS_NAME, 'input')[0].send_keys(f'{bot_name}{i}')
+            confirm_reaction.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
+            confirm_reaction.find_elements(By.CLASS_NAME, 'button-text')[2].click()
+            confirm_reaction.find_element(By.CSS_SELECTOR, '.button--primary.button.button--icon.button--icon--confirm').click()
+
+            confirm_reaction.quit()
+
+        frame2.destroy()
+
+
+    frame2 = tk.Toplevel(root)
+    frame2.title("Консоль упровления ботами")
+    frame2.geometry("600x250+700+300")
+    icon = tk.PhotoImage(file="images/AdvanceLogo.png")
+    frame2.iconphoto(False, icon)
+    frame2.resizable(False, False)
+
+    global entry_var
+    entry_var = tk.StringVar()
+
+    lable_seting = ttk.Label(frame2, text="| НАСТРОЙКИ |")
+    label_link = ttk.Label(frame2, text="Введите ссылку на пост: ")
+    lable_dash = ttk.Label(frame2, text="-" * 120)
+    combobox_react = ttk.Combobox(frame2, values=["Клёво", "Люблю", "Ха-ха", "Ничоси", "Печалька", "Отстой"])
+    lable_combobox_react = ttk.Label(frame2, text="Выберете реакцию: ")
+    start_btn = ttk.Button(frame2, text='Старт', command=lambda: main_ction(entry_var.get(), combobox_react.get()))
+
+    lable_seting.grid(column=0, row=0, columnspan=2)
+    lable_dash.grid(column=0, row=1, columnspan=2)
+    label_link.grid(column=0, row=2, padx=10, pady=10, sticky=tk.E)
+    ttk.Entry(frame2, textvariable=entry_var, width=55).grid(column=1, row=2, pady=10, sticky=tk.W)
+    lable_combobox_react.grid(column=0, row=3, padx=10, pady=10, sticky=tk.E)
+    combobox_react.grid(column=1, row=3, padx=10, pady=10, sticky=tk.W)
+    start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2)
+
+
+    root.mainloop()
 
 
 def remove_reactions(bot_name, password, quantity_bot):
@@ -183,7 +215,8 @@ def main():
     put_reaction_btn = ttk.Button(text='Поставить реакции на пост',
                                   command=lambda: put_reaction(bot_name_widget.get(),
                                                                password_widget.get(),
-                                                               quantity_bot_widget.get()))
+                                                               quantity_bot_widget.get(),
+                                                               root))
     remove_reactions_btn = ttk.Button(text='Убрать реакции',
                                       command=lambda: remove_reactions(bot_name_widget.get(),
                                                                        password_widget.get(),
