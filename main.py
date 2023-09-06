@@ -80,10 +80,6 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
 def put_reaction(bot_name, password, quantity_bot, root):
     def main_ction(url_to_the_page, reaction):
 
-        lable_process = ttk.Label(frame2, text="Идет процесс, ожидайте...")
-        lable_process.grid(column=0, row=5, padx=10, pady=10, sticky=tk.EW, columnspan=2)
-
-
         for i in range(1, quantity_bot+1):
             x = url_to_the_page.split('-')[-1]
 
@@ -110,7 +106,7 @@ def put_reaction(bot_name, password, quantity_bot, root):
 
     frame2 = tk.Toplevel(root)
     frame2.title("Консоль упровления ботами")
-    frame2.geometry("600x250+700+300")
+    frame2.geometry("600x230+700+300")
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     frame2.iconphoto(False, icon)
     frame2.resizable(False, False)
@@ -131,35 +127,59 @@ def put_reaction(bot_name, password, quantity_bot, root):
     ttk.Entry(frame2, textvariable=entry_var, width=55).grid(column=1, row=2, pady=10, sticky=tk.W)
     lable_combobox_react.grid(column=0, row=3, padx=10, pady=10, sticky=tk.E)
     combobox_react.grid(column=1, row=3, padx=10, pady=10, sticky=tk.W)
-    start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2)
+    start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2, rowspan=2)
 
 
     root.mainloop()
 
 
-def remove_reactions(bot_name, password, quantity_bot):
-    url_to_the_page = input('Введите ссылку на страницу: ')
-    post_number = int(input('Введите номер поста: '))
+def remove_reactions(bot_name, password, quantity_bot, root):
+    def main_ction(url_to_the_page, post_number):
+        for i in range(1, quantity_bot + 1):
+            driver = webdriver.Chrome(options=options)
+            driver.get(url_to_the_page)
 
-    for i in range(1, quantity_bot + 1):
-        driver = webdriver.Chrome(options=options)
-        driver.get(url_to_the_page)
+            driver.find_element(By.CLASS_NAME, 'p-navgroup-linkText').click()
+            time.sleep(2)
+            driver.find_elements(By.CLASS_NAME, 'input')[-2].send_keys(f'{bot_name}{i}')
+            driver.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
+            driver.find_elements(By.CLASS_NAME, 'iconic-label')[-1].click()
+            driver.find_elements(By.CLASS_NAME, 'button-text')[-2].click()
 
-        driver.find_element(By.CLASS_NAME, 'p-navgroup-linkText').click()
-        time.sleep(2)
-        driver.find_elements(By.CLASS_NAME, 'input')[-2].send_keys(f'{bot_name}{i}')
-        driver.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
-        driver.find_elements(By.CLASS_NAME, 'iconic-label')[-1].click()
-        driver.find_elements(By.CLASS_NAME, 'button-text')[-2].click()
+            reaction_elements = driver.find_elements(By.CLASS_NAME, 'reaction-text.js-reactionText')
+            target_element = reaction_elements[post_number - 1]
+            driver.execute_script("arguments[0].scrollIntoView();", target_element)
+            driver.execute_script("arguments[0].click();", target_element)
 
-        reaction_elements = driver.find_elements(By.CLASS_NAME, 'reaction-text.js-reactionText')
-        target_element = reaction_elements[post_number - 1]
-        driver.execute_script("arguments[0].scrollIntoView();", target_element)
-        driver.execute_script("arguments[0].click();", target_element)
+            driver.quit()
 
-        driver.quit()
+        frame2.destroy()
 
-    print('\n', '-'*16, '\n| Реакции убраны |\n', '-'*16)
+
+    frame2 = tk.Toplevel(root)
+    frame2.title("Консоль упровления ботами")
+    frame2.geometry("600x230+700+300")
+    icon = tk.PhotoImage(file="images/AdvanceLogo.png")
+    frame2.iconphoto(False, icon)
+    frame2.resizable(False, False)
+
+    global entry_var_link, entry_var_number
+    entry_var_link = tk.StringVar()
+    entry_var_number = tk.IntVar()
+
+    lable_seting = ttk.Label(frame2, text="| НАСТРОЙКИ |")
+    label_link = ttk.Label(frame2, text="Введите ссылку на страницу: ")
+    lable_dash = ttk.Label(frame2, text="-" * 120)
+    lable_number_post = ttk.Label(frame2, text="Введите номер поста: ")
+    start_btn = ttk.Button(frame2, text='Старт', command=lambda: main_ction(entry_var_link.get(), entry_var_number.get()))
+
+    lable_seting.grid(column=0, row=0, columnspan=2)
+    lable_dash.grid(column=0, row=1, columnspan=2)
+    label_link.grid(column=0, row=2, padx=10, pady=10, sticky=tk.E)
+    ttk.Entry(frame2, textvariable=entry_var_link, width=55).grid(column=1, row=2, pady=10, sticky=tk.W)
+    lable_number_post.grid(column=0, row=3, padx=10, pady=10, sticky=tk.E)
+    ttk.Entry(frame2, textvariable=entry_var_number).grid(column=1, row=3, padx=10, pady=10, sticky=tk.W)
+    start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2, rowspan=2)
 
 
 def write_messages(bot_name, password, quantity_bot):
@@ -197,7 +217,7 @@ def main():
     root.title("Консоль упровления ботами")
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     root.iconphoto(False, icon)
-    root.geometry("600x250+700+300")
+    root.geometry("600x230+700+300")
     root.resizable(False, False)
     root.protocol("WM_DELETE_WINDOW", finish)
 
@@ -212,7 +232,7 @@ def main():
                                                            password_widget.get(),
                                                            nick_in_the_game_widget.get(),
                                                            quantity_bot_widget.get()))
-    put_reaction_btn = ttk.Button(text='Поставить реакции на пост',
+    put_reaction_btn = ttk.Button(text='Поставить реакции',
                                   command=lambda: put_reaction(bot_name_widget.get(),
                                                                password_widget.get(),
                                                                quantity_bot_widget.get(),
@@ -220,7 +240,8 @@ def main():
     remove_reactions_btn = ttk.Button(text='Убрать реакции',
                                       command=lambda: remove_reactions(bot_name_widget.get(),
                                                                        password_widget.get(),
-                                                                       quantity_bot_widget.get()))
+                                                                       quantity_bot_widget.get(),
+                                                                       root))
     write_messages_btn = ttk.Button(text='Написать сообщения в теме',
                                     command=lambda: write_messages(bot_name_widget.get(),
                                                                    password_widget.get(),
