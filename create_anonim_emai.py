@@ -39,7 +39,7 @@ def check_mail(mail=''):
 
 
         current_dir = os.getcwd()
-        final_dir = os.path.join(current_dir, '../BotInAdvanceForum/all_mails')
+        final_dir = os.path.join(current_dir, 'all_mails')
 
         if not os.path.exists(final_dir):
             os.makedirs(final_dir)
