@@ -5,6 +5,8 @@ import create_anonim_emai
 import re, os, random, string, time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 options = webdriver.ChromeOptions()
@@ -24,6 +26,8 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
         mail = generate_random_email()
         driver = webdriver.Chrome()
         driver.get(url)
+
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'input')))
         input_fields = driver.find_elements(By.CLASS_NAME, 'input')[0:]
         labels = driver.find_elements(By.CLASS_NAME, 'formRow-label')[0:]
 
@@ -39,14 +43,26 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
             elif label.text == 'Сервер':
                 input_field.click()
                 driver.find_elements(By.TAG_NAME, 'option')[-2].click()
+
         driver.find_elements(By.CLASS_NAME, 'iconic')[-1].find_element(By.TAG_NAME, 'i').click()
+
+
+        iframe = driver.find_element(By.CSS_SELECTOR, f'iframe[scrolling="no"]')
+        driver.switch_to.frame(iframe)
+        driver.find_element(By.ID, 'checkbox').click()
+        driver.switch_to.default_content()
+
         time.sleep(30)
-        driver.find_element(By.ID, 'js-signUpButton').click()
+        try:
+            driver.find_element(By.ID, 'js-signUpButton').click()
+        except:
+            driver.quit()
+            continue
 
 
         create_anonim_emai.main(mail=mail)
-
         files_in_folder = os.listdir('all_mails')
+
         if len(files_in_folder) == 1:
             file_name = files_in_folder[0]
             file_path = os.path.join('all_mails', file_name)
@@ -54,8 +70,6 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
                 file_contents = file.read()
                 pattern = r"https://forum\.advance-rp\.ru/account-confirmation/.+"
                 matches = re.findall(pattern, file_contents)
-
-                # print(str(matches)[2:-3])
                 authenticity = webdriver.Chrome()
                 authenticity.get(str(matches)[2:-3])
 
@@ -65,8 +79,6 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
             while attempts < max_attempts:
                 try:
                     os.remove(file_path)
-                    # print(f"Файл '{file_name}' успешно удален.")
-                    # print('\n', '-'*20, '\n')
                     break
                 except PermissionError:
                     time.sleep(1)
@@ -94,12 +106,16 @@ def put_reaction(bot_name, password, quantity_bot, root):
             confirm_reaction = webdriver.Chrome(options=options)
             confirm_reaction.get(url=d[reaction])
 
-            confirm_reaction.find_elements(By.CLASS_NAME, 'input')[0].send_keys(f'{bot_name}{i}')
-            confirm_reaction.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
-            confirm_reaction.find_elements(By.CLASS_NAME, 'button-text')[2].click()
-            confirm_reaction.find_element(By.CSS_SELECTOR, '.button--primary.button.button--icon.button--icon--confirm').click()
+            try:
+                confirm_reaction.find_elements(By.CLASS_NAME, 'input')[0].send_keys(f'{bot_name}{i}')
+                confirm_reaction.find_elements(By.CLASS_NAME, 'input')[-1].send_keys(password)
+                confirm_reaction.find_elements(By.CLASS_NAME, 'button-text')[2].click()
+                confirm_reaction.find_element(By.CSS_SELECTOR, '.button--primary.button.button--icon.button--icon--confirm').click()
+                confirm_reaction.quit()
+            except:
+                print(f'{bot_name}{i}', 'error')
 
-            confirm_reaction.quit()
+
 
         frame2.destroy()
 
@@ -230,6 +246,11 @@ def write_messages(bot_name, password, quantity_bot, root):
 
 
 def main():
+    '''
+    Открывет графическое окно в котором вы можеет удобно работать с ботами на форуме: https://forum.advance-rp.ru
+    Возможности: Создать ботов | Поставить реакции | Убрать реакции | Написать сообщения в теме
+
+    '''
     
     def finish():
         root.destroy()
@@ -300,4 +321,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
