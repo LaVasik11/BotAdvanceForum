@@ -7,7 +7,54 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+import json
+import random
 
+
+names_list = []
+surnames_list = []
+
+def read_names_and_surnames():
+    global names_list, surnames_list
+    try:
+        with open('names_table.jsonl', 'r', encoding='utf-8') as file1,\
+                open('surnames_table.jsonl', 'r', encoding='utf-8') as file2:
+            for line in file1:
+                data = json.loads(line)
+                text_value = data.get('text')
+                if text_value:
+                    names_list.append(text_value)
+
+            for line in file2:
+                data = json.loads(line)
+                text_value = data.get('text')
+                if text_value:
+                    surnames_list.append(text_value)
+    except FileNotFoundError:
+        print("Ошибка: Файлы 'names_table.jsonl' и 'surnames_table.jsonl' не найдены.")
+    except json.JSONDecodeError:
+        print("Ошибка при чтении JSON данных из файлов.")
+
+def create_random_fullname():
+    if not names_list or not surnames_list:
+        read_names_and_surnames()
+
+    random_full_name = random.choice(names_list) + ' ' + random.choice(surnames_list)
+    return random_full_name
+
+def Cyrillic_to_Latin(fullname_Cyr):
+    d = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z',
+        'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+        'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+        'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z',
+        'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R',
+        'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+        'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+    }
+
+    return ''.join([d[i] for i in fullname_Cyr.split()[0]]) + '_' + ''.join([d[i] for i in fullname_Cyr.split()[1]])
 
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')
@@ -20,9 +67,17 @@ def generate_random_email():
     username = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
     return f'{username}@{domain}'
 
-def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
+def create_bot(bot_name, password, nick_in_the_game, quantity_bot, auto_create_name):
+
+    list_of_nicknames = []
 
     for i in range(1, quantity_bot+1):
+        if auto_create_name:
+            fullname = create_random_fullname()
+            list_of_nicknames.append(fullname)
+            bot_name = fullname
+            nick_in_the_game = fullname
+
         mail = generate_random_email()
         driver = webdriver.Chrome()
         driver.get(url)
@@ -33,13 +88,20 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
 
         for label, input_field in zip(labels, input_fields):
             if label.text == 'Имя пользователя':
-                input_field.send_keys(f'{bot_name}{i}')
+                if not auto_create_name:
+                    input_field.send_keys(f'{bot_name}{i}')
+                else:
+                    input_field.send_keys(bot_name)
             elif label.text == 'Электронная почта':
                 input_field.send_keys(mail)
             elif label.text == 'Пароль':
                 input_field.send_keys(f'{password}')
             elif label.text == 'Ник в игре':
-                input_field.send_keys(f'{nick_in_the_game}{i}')
+                if auto_create_name:
+                    input_field.send_keys(Cyrillic_to_Latin(nick_in_the_game))
+
+                else:
+                    input_field.send_keys(nick_in_the_game)
             elif label.text == 'Сервер':
                 input_field.click()
                 driver.find_elements(By.TAG_NAME, 'option')[-2].click()
@@ -83,6 +145,11 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot):
                 except PermissionError:
                     time.sleep(1)
                     attempts += 1
+
+
+        with open('list_of_nicknames.txt', 'a') as file:
+            for nick in list_of_nicknames:
+                file.write(nick + '\n')
 
         driver.quit()
         authenticity.quit()
@@ -255,11 +322,12 @@ def main():
     def finish():
         root.destroy()
 
+
     root = tk.Tk()
     root.title("Консоль упровления ботами")
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     root.iconphoto(False, icon)
-    root.geometry("600x230+700+300")
+    root.geometry("600x240+700+300")
     root.resizable(False, False)
     root.protocol("WM_DELETE_WINDOW", finish)
 
@@ -273,7 +341,8 @@ def main():
                                 command=lambda: create_bot(bot_name_widget.get(),
                                                            password_widget.get(),
                                                            nick_in_the_game_widget.get(),
-                                                           quantity_bot_widget.get()))
+                                                           quantity_bot_widget.get(),
+                                                           auto_generate_names.instate(['selected'])))
     put_reaction_btn = ttk.Button(text='Поставить реакции',
                                   command=lambda: put_reaction(bot_name_widget.get(),
                                                                password_widget.get(),
@@ -297,6 +366,7 @@ def main():
     lable_nick_in_the_game_widget = ttk.Label(text="Ник в игре:")
     lable_quantity_bot_widget = ttk.Label(text="Количество ботов:")
     lable_dash = ttk.Label(text="-"*120)
+    auto_generate_names = ttk.Checkbutton(text="Автоматическая генерация имён", variable=tk.IntVar(value=0))
 
 
 
@@ -314,7 +384,8 @@ def main():
     ttk.Entry(textvariable=nick_in_the_game_widget).grid(column=1, row=4, pady=10, sticky=tk.W)
     lable_quantity_bot_widget.grid(column=2, row=4, pady=10, sticky=tk.E)
     ttk.Entry(textvariable=quantity_bot_widget).grid(column=3, row=4, pady=10, sticky=tk.W)
-    lable_dash.grid(column=0, row=5, columnspan=4, sticky=tk.SW)
+    auto_generate_names.grid(column=0, row=5, columnspan=4, pady=10)
+    lable_dash.grid(column=0, row=6, columnspan=4, sticky=tk.SW)
 
     root.mainloop()
 
