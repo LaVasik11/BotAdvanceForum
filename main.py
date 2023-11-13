@@ -14,6 +14,8 @@ import random
 names_list = []
 surnames_list = []
 
+size_window = "600x250+700+300"
+
 def read_names_and_surnames():
     global names_list, surnames_list
     try:
@@ -21,17 +23,18 @@ def read_names_and_surnames():
                 open('surnames_table.jsonl', 'r', encoding='utf-8') as file2:
             for line in file1:
                 data = json.loads(line)
-                text_value = data.get('text')
-                if text_value:
-                    names_list.append(text_value)
+                name = data.get('text')
+                gender = data.get('gender')
+                if name:
+                    names_list.append((name, gender))
 
             for line in file2:
                 data = json.loads(line)
-                text_value = data.get('text')
-                if text_value:
-                    surnames_list.append(text_value)
-    except FileNotFoundError:
-        print("Ошибка: Файлы 'names_table.jsonl' и 'surnames_table.jsonl' не найдены.")
+                surname = data.get('text')
+                gender = data.get('gender')
+                if surname:
+                    surnames_list.append((surname, gender))
+
     except json.JSONDecodeError:
         print("Ошибка при чтении JSON данных из файлов.")
 
@@ -39,7 +42,11 @@ def create_random_fullname():
     if not names_list or not surnames_list:
         read_names_and_surnames()
 
-    random_full_name = random.choice(names_list) + ' ' + random.choice(surnames_list)
+    gender = random.choice(['f','m'])
+    sorted_by_gender_name = list(filter(lambda x: x[1] == gender, names_list))
+    sorted_by_gender_surname = list(filter(lambda x: x[1] == gender, surnames_list))
+    random_full_name = random.choice(sorted_by_gender_name)[0] + ' ' + random.choice(sorted_by_gender_surname)[0]
+
     return random_full_name
 
 def Cyrillic_to_Latin(fullname_Cyr):
@@ -98,6 +105,7 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot, auto_create_n
                 input_field.send_keys(f'{password}')
             elif label.text == 'Ник в игре':
                 if auto_create_name:
+                    print(nick_in_the_game)
                     input_field.send_keys(Cyrillic_to_Latin(nick_in_the_game))
 
                 else:
@@ -147,9 +155,11 @@ def create_bot(bot_name, password, nick_in_the_game, quantity_bot, auto_create_n
                     attempts += 1
 
 
-        with open('list_of_nicknames.txt', 'a') as file:
+        with open('list_of_nicknames.txt', 'a', encoding='utf-8') as file:
             for nick in list_of_nicknames:
                 file.write(nick + '\n')
+
+            list_of_nicknames = []
 
         driver.quit()
         authenticity.quit()
@@ -189,7 +199,7 @@ def put_reaction(bot_name, password, quantity_bot, root):
 
     frame2 = tk.Toplevel(root)
     frame2.title("Консоль упровления ботами")
-    frame2.geometry("600x230+700+300")
+    frame2.geometry(size_window)
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     frame2.iconphoto(False, icon)
     frame2.resizable(False, False)
@@ -241,7 +251,7 @@ def remove_reactions(bot_name, password, quantity_bot, root):
 
     frame2 = tk.Toplevel(root)
     frame2.title("Консоль упровления ботами")
-    frame2.geometry("600x230+700+300")
+    frame2.geometry(size_window)
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     frame2.iconphoto(False, icon)
     frame2.resizable(False, False)
@@ -287,7 +297,7 @@ def write_messages(bot_name, password, quantity_bot, root):
 
     frame2 = tk.Toplevel(root)
     frame2.title("Консоль упровления ботами")
-    frame2.geometry("600x230+700+300")
+    frame2.geometry(size_window)
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     frame2.iconphoto(False, icon)
     frame2.resizable(False, False)
@@ -312,6 +322,13 @@ def write_messages(bot_name, password, quantity_bot, root):
     start_btn.grid(column=0, row=4, padx=10, pady=10, sticky=tk.EW, columnspan=2, rowspan=2)
 
 
+def account_verification():
+    with open('list_of_nicknames.txt', 'r', encoding='utf-8') as file:
+        for i in file.readlines():
+            print(i)
+
+
+
 def main():
     '''
     Открывет графическое окно в котором вы можеет удобно работать с ботами на форуме: https://forum.advance-rp.ru
@@ -327,7 +344,7 @@ def main():
     root.title("Консоль упровления ботами")
     icon = tk.PhotoImage(file="images/AdvanceLogo.png")
     root.iconphoto(False, icon)
-    root.geometry("600x240+700+300")
+    root.geometry("515x250+700+300")
     root.resizable(False, False)
     root.protocol("WM_DELETE_WINDOW", finish)
 
@@ -335,6 +352,7 @@ def main():
     password_widget = tk.StringVar(value=password)
     nick_in_the_game_widget = tk.StringVar(value=nick_in_the_game)
     quantity_bot_widget = tk.IntVar(value=quantity_bot)
+    check_akk = ttk.Button(text='Проверить аккаунты', command=account_verification)
 
 
     create_bot_btn = ttk.Button(text="Создать ботов",
@@ -384,8 +402,9 @@ def main():
     ttk.Entry(textvariable=nick_in_the_game_widget).grid(column=1, row=4, pady=10, sticky=tk.W)
     lable_quantity_bot_widget.grid(column=2, row=4, pady=10, sticky=tk.E)
     ttk.Entry(textvariable=quantity_bot_widget).grid(column=3, row=4, pady=10, sticky=tk.W)
-    auto_generate_names.grid(column=0, row=5, columnspan=4, pady=10)
-    lable_dash.grid(column=0, row=6, columnspan=4, sticky=tk.SW)
+    auto_generate_names.grid(column=0, row=5, columnspan=3, pady=10)
+    check_akk.grid(column=3, row=5, sticky="w")
+
 
     root.mainloop()
 
